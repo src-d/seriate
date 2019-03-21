@@ -1,0 +1,57 @@
+language: python
+sudo: true
+dist: xenial
+cache: pip
+before_cache:
+  - chown -R travis:travis $HOME/.cache/pip
+stages:
+  - style
+  - test
+  - name: deploy
+    if: tag =~ .*
+_install: &_install
+  - pip install --upgrade pip cython codecov
+  - pip install .[test]
+  - cd $(pip show seriate|grep Location|cut -d' ' -f2)
+_coverage: &_coverage
+  - coverage run --concurrency=multiprocessing -m unittest discover
+  - travis_retry coverage combine
+matrix:
+  fast_finish: true
+  include:
+    - stage: style
+      python: 3.7
+      script:
+        - flake8
+      install:
+        - pip install -r requirements-lint.txt
+    - stage: test
+      python: 3.5
+      script: *_coverage
+      install: *_install
+    - stage: test
+      python: 3.6
+      script: *_coverage
+      install: *_install
+    - stage: test
+      python: 3.7
+      script: *_coverage
+      install: *_install
+      after_success:
+        - codecov
+    - stage: deploy
+      python: 3.5
+      install:
+        - pip install --upgrade pip
+        - pip install twine pyopenssl
+      script:
+        - test $(python3 setup.py --version) == $TRAVIS_TAG
+        - python3 setup.py bdist_wheel
+      deploy:
+        provider: script
+        script: twine upload dist/*py3-none-any* -u $PYPI_LOGIN -p $PYPI_PASS
+        skip_cleanup: true
+        on:
+          tags: true
+notifications:
+  email: false

@@ -1,0 +1,12 @@
+[flake8]
+ignore=D301
+max-line-length=99
+exclude=
+    .git
+    doc
+inline-quotes="
+import-order-style=appnexus
+application-package-names=seriate
+per-file-ignores=
+    test_seriate.py:D
+    setup.py:D
