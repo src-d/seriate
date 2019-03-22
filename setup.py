@@ -18,7 +18,7 @@ setup(
     author_email="machine-learning@sourced.tech",
     url="https://github.com/src-d/seriate",
     download_url="https://github.com/src-d/seriate",
-    packages=["seriate"],
+    py_modules=["seriate"],
     keywords=["seriation"],
     install_requires=["numpy>=1.0", "ortools>=6.9.5824"],
     tests_require=["scipy>=1.0"],

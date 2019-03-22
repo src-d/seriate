@@ -12,10 +12,8 @@ stages:
 _install: &_install
   - pip install --upgrade pip cython codecov
   - pip install .[test]
-  - cd $(pip show seriate|grep Location|cut -d' ' -f2)
 _coverage: &_coverage
-  - coverage run --concurrency=multiprocessing -m unittest discover
-  - travis_retry coverage combine
+  - coverage run setup.py test
 matrix:
   fast_finish: true
   include:
