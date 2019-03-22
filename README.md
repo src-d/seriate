@@ -7,6 +7,8 @@ Optimal ordering of elements in a set given their distance matrix.
 ![stability: stable](https://svg-badge.appspot.com/badge/stability/stable?color=007ec6)
 [![Apache 2.0 license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+![go-git-shuffled](doc/go-git-shuffled.png)![go-git-mapping](doc/go-git-mapping.png)![go-git-original](doc/go-git-original.png)
+
 [Overview](#overview) • [How To Use](#how-to-use) • [Contributions](#contributions) • [License](#license)
 
 ## Overview
