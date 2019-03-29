@@ -12,7 +12,7 @@ setup(
     description="Implementation of the Seriation sequence ordering algorithm.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version="1.0.0",
+    version="1.0.1",
     license="Apache-2.0",
     author="source{d}",
     author_email="machine-learning@sourced.tech",
@@ -20,7 +20,7 @@ setup(
     download_url="https://github.com/src-d/seriate",
     py_modules=["seriate"],
     keywords=["seriation"],
-    install_requires=["numpy>=1.0", "ortools>=6.9.5824"],
+    install_requires=["numpy>=1.0", "ortools>=6.7.4973,<8", "packaging>=16.0"],
     tests_require=["scipy>=1.0"],
     package_data={"": ["LICENSE.md", "README.md", "requirements.txt"]},
     classifiers=[

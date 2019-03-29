@@ -2,10 +2,15 @@
 from typing import List
 
 import numpy
+import ortools
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+from packaging.version import Version
 
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
+ortools_version = Version(ortools.__version__)
+ortools6 = Version("6.0.0") <= ortools_version < Version("7")
+ortools7 = Version("7.0.0") <= ortools_version < Version("8")
 
 
 def seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -> List[int]:
@@ -32,9 +37,17 @@ def seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) ->
         assert 1 <= len(dists.shape) <= 2
         assert int(numpy.round(numpy.sqrt(1 + 8 * dists.shape[0]))) ** 2 == 1 + 8 * dists.shape[0]
         size = int(numpy.round((1 + numpy.sqrt(1 + 8 * dists.shape[0])) / 2))
-    routing = pywrapcp.RoutingModel(size + 1, 1, size)
+
+    if ortools6:
+        routing = pywrapcp.RoutingModel(size + 1, 1, size)
+    elif ortools7:
+        manager = pywrapcp.RoutingIndexManager(size + 1, 1, size)
+        routing = pywrapcp.RoutingModel(manager)
 
     def dist_callback(x, y):
+        if ortools7:
+            x = manager.IndexToNode(x)
+            y = manager.IndexToNode(y)
         if x == size or y == size or x == y:
             return 0
         if squareform:
@@ -47,16 +60,24 @@ def seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) ->
         # ortools wants integers, so we approximate here
         return int(dist * approximation_multiplier)
 
-    routing.SetArcCostEvaluatorOfAllVehicles(dist_callback)
-    search_parameters = pywrapcp.RoutingModel.DefaultSearchParameters()
+    if ortools6:
+        routing.SetArcCostEvaluatorOfAllVehicles(dist_callback)
+        search_parameters = pywrapcp.RoutingModel.DefaultSearchParameters()
+        search_parameters.time_limit_ms = int(timeout * 1000)
+    elif ortools7:
+        routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(dist_callback))
+        search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+        search_parameters.time_limit.FromMilliseconds(int(timeout * 1000))
     search_parameters.local_search_metaheuristic = \
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
-    search_parameters.time_limit_ms = int(timeout * 1000)
     assignment = routing.SolveWithParameters(search_parameters)
     index = routing.Start(0)
     route = []
     while not routing.IsEnd(index):
-        node = routing.IndexToNode(index)
+        if ortools6:
+            node = routing.IndexToNode(index)
+        elif ortools7:
+            node = manager.IndexToNode(index)
         if node < size:
             route.append(node)
         index = assignment.Value(routing.NextVar(index))
