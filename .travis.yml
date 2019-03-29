@@ -11,6 +11,7 @@ stages:
     if: tag =~ .*
 _install: &_install
   - pip install --upgrade pip cython codecov
+  - pip install ortools$ortools
   - pip install .[test]
 _coverage: &_coverage
   - coverage run setup.py test
@@ -29,6 +30,18 @@ matrix:
       install: *_install
     - stage: test
       python: 3.6
+      env:
+        - ortools="==6.7.4973"
+      script: *_coverage
+      install: *_install
+    - stage: test
+      python: 3.6
+      script: *_coverage
+      install: *_install
+    - stage: test
+      python: 3.7
+      env:
+        - ortools="==6.9.5824"
       script: *_coverage
       install: *_install
     - stage: test
