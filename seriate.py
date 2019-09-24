@@ -11,9 +11,51 @@ __version__ = "1.0.1"
 ortools_version = Version(ortools.__version__)
 ortools6 = Version("6.0.0") <= ortools_version < Version("7")
 ortools7 = Version("7.0.0") <= ortools_version < Version("8")
+if not ortools6 and not ortools7:
+    raise ImportError("No valid version of ortools installed. Please install ortools 6 or 7.")
 
 
-def seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -> List[int]:
+class IncompleteSolutionError(Exception):
+    """Indicate that a solution for the TSP problem was not found."""
+
+    pass
+
+
+def seriate(dists: numpy.ndarray, approximation_multiplier: int = 1000,
+            timeout: float = 2.0) -> List[int]:
+    """
+    Order the elements of a set so that the sum of sequential pairwise distances is minimal.
+
+    We solve the Travelling Salesman Problem (TSP) under the hood.
+    Reference: http://nicolas.kruchten.com/content/2018/02/seriation/
+
+    :param dists: Either a condensed pdist-like or a symmetric square distance matrix.
+    :param approximation_multiplier: Multiply by this number before converting distances \
+                                     to integers.
+    :param timeout: Maximum amount of time allowed to spend for solving the TSP, in seconds. \
+                    This value cannot be less than 0. If timeout is 0 it will try to solve \
+                    the problem with timeout = 1, and double the timeout every time it fails \
+                    until a valid solution is found.
+    :return: List with ordered element indexes, the same length as the number of elements \
+             involved in calculating `dists`.
+    """
+    if timeout > 0:
+        return _seriate(dists=dists, approximation_multiplier=approximation_multiplier,
+                        timeout=timeout)
+    elif timeout < 0:
+        raise ValueError("timeout cannot be negative.")
+    timeout = 1.
+    route = None
+    while route is None:
+        try:
+            route = _seriate(dists=dists, approximation_multiplier=approximation_multiplier,
+                             timeout=timeout)
+        except IncompleteSolutionError:
+            timeout *= 2
+    return route
+
+
+def _seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -> List[int]:
     """
     Order the elements of a set so that the sum of sequential pairwise distances is minimal.
 
@@ -28,6 +70,7 @@ def seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) ->
              involved in calculating `dists`.
     """
     assert dists[dists < 0].size == 0, "distances must be non-negative"
+    assert timeout > 0
     squareform = len(dists.shape) == 2 and dists.shape[1] > 1
     if squareform:
         assert dists.shape[0] == dists.shape[1]
@@ -70,7 +113,12 @@ def seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) ->
         search_parameters.time_limit.FromMilliseconds(int(timeout * 1000))
     search_parameters.local_search_metaheuristic = \
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
+    search_parameters.first_solution_strategy = \
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
     assignment = routing.SolveWithParameters(search_parameters)
+    if assignment is None:
+        raise IncompleteSolutionError("No solution was found. Please increase the "
+                                      "timeout value or set it to 0.")
     index = routing.Start(0)
     route = []
     while not routing.IsEnd(index):
