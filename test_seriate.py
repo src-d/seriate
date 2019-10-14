@@ -3,7 +3,7 @@ import unittest
 import numpy
 from scipy.spatial.distance import pdist, squareform
 
-from seriate import IncompleteSolutionError, seriate
+from seriate import IncompleteSolutionError, InvalidDistanceValues, seriate
 
 
 class SeriateTests(unittest.TestCase):
@@ -30,6 +30,16 @@ class SeriateTests(unittest.TestCase):
         seq = seriate(big_dist, timeout=0)
         self.assertIsInstance(seq, list)
         self.assertIsInstance(seq[0], int)
+
+    def test_errors(self):
+        with self.assertRaises(InvalidDistanceValues):
+            seriate(numpy.array([numpy.inf, 0, 0, 0]))
+
+        with self.assertRaises(InvalidDistanceValues):
+            seriate(numpy.array([numpy.nan, 0, 0, 0]))
+
+        with self.assertRaises(InvalidDistanceValues):
+            seriate(numpy.array([None, 0, 0, 0]))
 
 
 if __name__ == "__main__":
