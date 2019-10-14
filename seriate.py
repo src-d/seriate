@@ -21,6 +21,23 @@ class IncompleteSolutionError(Exception):
     pass
 
 
+class InvalidDistanceValues(ValueError):
+    """Indicate that the distance array contains invalid values."""
+
+
+def _validate_data(dists: numpy.ndarray):
+    """Check dists contains valid values."""
+    try:
+        isinf = numpy.isinf(dists).any()
+        isnan = numpy.isnan(dists).any()
+    except Exception as e:
+        raise InvalidDistanceValues() from e
+    if isinf:
+        raise InvalidDistanceValues("Data contains inf values.")
+    if isnan:
+        raise InvalidDistanceValues("Data contains NaN values.")
+
+
 def seriate(dists: numpy.ndarray, approximation_multiplier: int = 1000,
             timeout: float = 2.0) -> List[int]:
     """
@@ -39,6 +56,7 @@ def seriate(dists: numpy.ndarray, approximation_multiplier: int = 1000,
     :return: List with ordered element indexes, the same length as the number of elements \
              involved in calculating `dists`.
     """
+    _validate_data(dists)
     if timeout > 0:
         return _seriate(dists=dists, approximation_multiplier=approximation_multiplier,
                         timeout=timeout)
