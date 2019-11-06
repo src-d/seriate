@@ -20,6 +20,21 @@ class SeriateTests(unittest.TestCase):
         seq = seriate(dists)
         self.assertEqual(seq, [4, 3, 2, 1, 0])
 
+    def test_empty_pdist(self):
+        dists = numpy.empty((0,))
+        seq = seriate(dists)
+        self.assertEqual(seq, [0])
+
+    def test_empty_squareform(self):
+        dists = numpy.empty((0, 0))
+        seq = seriate(dists)
+        self.assertEqual(seq, [])
+
+    def test_single(self):
+        dists = numpy.ones((1, 1))
+        seq = seriate(dists)
+        self.assertEqual(seq, [0])
+
     def test_timeout_error(self):
         with self.assertRaises(IncompleteSolutionError):
             seriate(pdist(self.elements), timeout=1e-4)

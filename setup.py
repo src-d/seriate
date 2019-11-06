@@ -12,7 +12,7 @@ setup(
     description="Implementation of the Seriation sequence ordering algorithm.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version="1.1.1",
+    version="1.1.2",
     license="Apache-2.0",
     author="source{d}",
     author_email="machine-learning@sourced.tech",

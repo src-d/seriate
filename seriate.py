@@ -89,13 +89,13 @@ def _seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -
     """
     assert dists[dists < 0].size == 0, "distances must be non-negative"
     assert timeout > 0
-    squareform = len(dists.shape) == 2 and dists.shape[1] > 1
+    squareform = len(dists.shape) == 2
     if squareform:
         assert dists.shape[0] == dists.shape[1]
         size = dists.shape[0]
     else:
         # dists.shape[0] = (m * (m - 1)) // 2
-        assert 1 <= len(dists.shape) <= 2
+        assert len(dists.shape) == 1
         assert int(numpy.round(numpy.sqrt(1 + 8 * dists.shape[0]))) ** 2 == 1 + 8 * dists.shape[0]
         size = int(numpy.round((1 + numpy.sqrt(1 + 8 * dists.shape[0])) / 2))
 
@@ -112,7 +112,7 @@ def _seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -
         if x == size or y == size or x == y:
             return 0
         if squareform:
-            dist = dists[x][y]
+            dist = dists[x, y]
         else:
             # convert to the condensed index
             if x < y:
