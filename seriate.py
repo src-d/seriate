@@ -11,8 +11,10 @@ __version__ = "1.0.1"
 ortools_version = Version(ortools.__version__)
 ortools6 = Version("6.0.0") <= ortools_version < Version("7")
 ortools7 = Version("7.0.0") <= ortools_version < Version("8")
-if not ortools6 and not ortools7:
-    raise ImportError("No valid version of ortools installed. Please install ortools 6 or 7.")
+ortools8 = Version("8.0.0") <= ortools_version < Version("9")
+ortools9 = Version("9.0.0") <= ortools_version < Version("10")
+if not ortools6 and not ortools7 and not ortools8 and not ortools9:
+    raise ImportError("No valid version of ortools installed. Please install ortools 6 or 7 or 8 or 9.")
 
 
 class IncompleteSolutionError(Exception):
@@ -101,12 +103,12 @@ def _seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -
 
     if ortools6:
         routing = pywrapcp.RoutingModel(size + 1, 1, size)
-    elif ortools7:
+    elif ortools7 or ortools8 or ortools9:
         manager = pywrapcp.RoutingIndexManager(size + 1, 1, size)
         routing = pywrapcp.RoutingModel(manager)
 
     def dist_callback(x, y):
-        if ortools7:
+        if ortools7 or ortools8 or ortools9:
             x = manager.IndexToNode(x)
             y = manager.IndexToNode(y)
         if x == size or y == size or x == y:
@@ -125,7 +127,7 @@ def _seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -
         routing.SetArcCostEvaluatorOfAllVehicles(dist_callback)
         search_parameters = pywrapcp.RoutingModel.DefaultSearchParameters()
         search_parameters.time_limit_ms = int(timeout * 1000)
-    elif ortools7:
+    elif ortools7 or ortools8 or ortools9:
         routing.SetArcCostEvaluatorOfAllVehicles(routing.RegisterTransitCallback(dist_callback))
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
         search_parameters.time_limit.FromMilliseconds(int(timeout * 1000))
@@ -142,7 +144,7 @@ def _seriate(dists: numpy.ndarray, approximation_multiplier=1000, timeout=2.0) -
     while not routing.IsEnd(index):
         if ortools6:
             node = routing.IndexToNode(index)
-        elif ortools7:
+        elif ortools7 or ortools8 or ortools9:
             node = manager.IndexToNode(index)
         if node < size:
             route.append(node)

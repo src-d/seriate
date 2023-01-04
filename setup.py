@@ -20,7 +20,7 @@ setup(
     download_url="https://github.com/src-d/seriate",
     py_modules=["seriate"],
     keywords=["seriation"],
-    install_requires=["numpy>=1.0", "ortools>=6.7.4973,<8", "packaging>=16.0"],
+    install_requires=["numpy>=1.0", "ortools>=6.7.4973,<=9", "packaging>=16.0"],
     tests_require=["scipy>=1.0"],
     package_data={"": ["LICENSE.md", "README.md", "requirements.txt"]},
     classifiers=[
@@ -31,5 +31,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
 )

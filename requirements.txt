@@ -1,4 +1,4 @@
-numpy==1.15.1
-scipy==1.0.1
-ortools==6.9.5824
-packaging==16.8
+numpy>=1.15.1
+scipy>=1.0.1
+ortools>=6.9.5824
+packaging>=16.8
